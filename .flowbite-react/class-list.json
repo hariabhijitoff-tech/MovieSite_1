@@ -1,1 +1,25 @@
-[]
+[
+  "animate-spin",
+  "dark:fill-gray-300",
+  "dark:text-gray-600",
+  "fill-cyan-600",
+  "fill-gray-600",
+  "fill-green-500",
+  "fill-pink-600",
+  "fill-primary-600",
+  "fill-purple-600",
+  "fill-red-600",
+  "fill-yellow-400",
+  "h-10",
+  "h-3",
+  "h-4",
+  "h-6",
+  "h-8",
+  "inline",
+  "text-gray-200",
+  "w-10",
+  "w-3",
+  "w-4",
+  "w-6",
+  "w-8"
+]
