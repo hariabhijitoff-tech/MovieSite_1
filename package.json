@@ -11,8 +11,13 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "flowbite": "^4.0.1",
+    "flowbite-react": "^0.12.16",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-use": "^17.6.0",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
