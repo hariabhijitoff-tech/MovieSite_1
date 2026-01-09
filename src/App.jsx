@@ -26,6 +26,7 @@ function App() {
   const [totalResults, settotalResults] = useState(0)
   const [type, settype] = useState('')
   const [hasSearched, sethasSearched] = useState(false)
+  const [selectedMovie, setselectedMovie] = useState(null)
   let totalPages = 0
   if (totalResults > 0) { totalPages = Math.ceil(totalResults / 10) }
 
@@ -161,9 +162,13 @@ function App() {
                 <p className="text-slate-300 mb-2">
                   Showing {movieList.length} of {totalResults} results for "{debouncedTerm}"
                 </p>
-              <div className='movie-grid grid grid-cols-5 gap-6 p-4'>
+              <div className='movie-grid grid grid-cols-5 gap-6 p-4 relative'>
+            { selectedMovie && (<><div id='full-card' className="w-220 h-130 fixed z-30 bg-red-800 rounded-3xl inset-0 m-auto">
+              <button className='cursor-pointer rounded full bg-amber-400 text-7xl absolute right-0' onClick={()=>setselectedMovie(null)}>X</button>
+            </div>
+              <div className="backdrop-wrap w-screen h-screen fixed inset-0 z-20 backdrop-blur-[2px] bg-slate-900/40"></div></>)}
                 {movieList.map((movie) => (
-                  <div key={movie.imdbID} className='movie-card w-64 h-fit min-h-[400px] bg-slate-700 rounded-4xl shadow-md p-4 flex flex-col transition-all ease-in hover:scale-105 hover:bg-slate-600 cursor-pointer'>
+                  <div key={movie.imdbID} onClick={()=>setselectedMovie(movie)} className='movie-card w-64 h-fit min-h-[400px] bg-slate-700 rounded-4xl shadow-md p-4 flex flex-col transition-all ease-in hover:scale-105 hover:bg-slate-600 cursor-pointer'>
                     <img
                       src={movie.Poster !== "N/A" ? movie.Poster : "./src/assets/poster.png"}
                       alt={movie.Title}
