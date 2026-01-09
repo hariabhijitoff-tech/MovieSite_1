@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import SpinnerIcon from './components/SpinnerIcon'
@@ -16,14 +16,7 @@ const API_OPTIONS = {
 
 
 function App() {
-const goToTop = () => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'smooth' // for a smooth scrolling effect
-    })}
     
-  
   const [searchTerm, setSearchTerm] = useState('')
   const [errorMessage, seterrorMessage] = useState("")
   const [movieList, setmovieList] = useState([])
@@ -54,8 +47,7 @@ const goToTop = () => {
 
       const cacheKey = `${debouncedTerm}-${pageNo}`
       if (cache.current[cacheKey]) {
-        const cachedData = cache.current[cacheKey]
-        setmovieList(prev => (pageNo === 1 ? cachedData : [...prev, ...cachedData]))
+        setmovieList(cache.current[cacheKey])
         return
       }
 
@@ -68,10 +60,12 @@ const goToTop = () => {
       setloading(true)
       seterrorMessage("")
       try {
-        const endpoint =
-          `https://api.allorigins.win/raw?url=${encodeURIComponent(
-            API_BASE_URL + "&s=" + debouncedTerm + "&page=" + pageNo
-          )}`
+        // const endpoint =
+        //   `https://api.allorigins.win/raw?url=${encodeURIComponent(
+        //     API_BASE_URL + "&s=" + debouncedTerm + "&page=" + pageNo
+        //   )}`
+
+        const endpoint = `/omdb/?apikey=${API_KEY}&s=${debouncedTerm}&page=${pageNo}`
 
         const response = await fetch(endpoint, { ...API_OPTIONS, signal })
         if (!response.ok) {
@@ -123,10 +117,19 @@ const goToTop = () => {
 
   }, [debouncedTerm, pageNo])
 
+  
+  useLayoutEffect(() => {
+          window.scrollTo({
+      top: 340,
+      left: 0,
+      behavior: 'smooth'
+    })
+  }, [pageNo])
+
 
   return (
     <>
-      <main className='h-[2500px] w-screen bg-gradient-to-b from-slate-900 to-slate-700 flex flex-col items-center'>
+      <main className='max-h-[2500px] min-h-[1600px] w-screen bg-gradient-to-b from-slate-900 to-slate-700 flex flex-col items-center'>
         <Navbar />
         <Hero searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
@@ -142,13 +145,13 @@ const goToTop = () => {
                   Showing {movieList.length} of {totalResults} results for "{debouncedTerm}"
                 </p>
               )}
-              <div className='movie-grid grid grid-cols-4 gap-6 p-4'>
+              <div className='movie-grid grid grid-cols-5 gap-6 p-4'>
                 {movieList.map((movie) => (
-                  <div key={movie.imdbID} className='movie-card w-74 h-fit min-h-[460px] bg-slate-700 rounded-4xl shadow-md p-4 flex flex-col transition-all ease-in hover:scale-105 hover:bg-slate-600 cursor-pointer'>
+                  <div key={movie.imdbID} className='movie-card w-64 h-fit min-h-[400px] bg-slate-700 rounded-4xl shadow-md p-4 flex flex-col transition-all ease-in hover:scale-105 hover:bg-slate-600 cursor-pointer'>
                     <img
                       src={movie.Poster !== "N/A" ? movie.Poster : "./src/assets/poster.png"}
                       alt={movie.Title}
-                      className='movie-poster m-auto w-64 max-w-64 rounded-2xl drop-shadow-2xl'
+                      className='movie-poster m-auto w-56 max-w-56 h-[2/3] rounded-2xl drop-shadow-2xl'
                     />
                     <div className="infos text-white text-md my-2 px-2 flex flex-col items-baseline gap-2">
                       <h3 className='movie-title text-xl font-bold'>{movie.Title}</h3>
@@ -161,10 +164,11 @@ const goToTop = () => {
                   </div>
                 ))}
               </div>
-        <div className="page-no text-md text-center text-white pb-4"> Page {pageNo} of {totalPages}</div>
+        <div className="page-no text-md text-center text-white mt-6 pb-4"> Page {pageNo} of {totalPages}</div>
 
-        <div className="pages text-center">
-          <button onClick={() => {setpageNo(prev => prev + 1); goToTop()}} className='page-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600'>Next &gt;&gt;</button>
+        <div className="pages text-center flex justify-center gap-10">
+          <button disabled={pageNo === 1} onClick={() => {setpageNo(prev => prev - 1)}} className='page-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600 disabled:pointer-events-none disabled:bg-slate-500'>&lt;&lt; Prev</button>
+          <button disabled={pageNo === totalPages} onClick={() => {setpageNo(prev => prev + 1);}} className='page-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600 disabled:pointer-events-none disabled:bg-slate-500'>Next &gt;&gt;</button>
         </div>
             </div>
           ) : (
