@@ -24,6 +24,8 @@ function App() {
   const [debouncedTerm, setdebouncedTerm] = useState('')
   const [pageNo, setpageNo] = useState(1)
   const [totalResults, settotalResults] = useState(0)
+  const [type, settype] = useState('')
+  const [hasSearched, sethasSearched] = useState(false)
   let totalPages = 0
   if (totalResults > 0) { totalPages = Math.ceil(totalResults / 10) }
 
@@ -39,13 +41,16 @@ function App() {
     const controller = new AbortController();
     const signal = controller.signal;
     const fetchMovies = async () => {
+
       if (!debouncedTerm) {
         setmovieList([])
         seterrorMessage("")
+        sethasSearched(false)
         return
       }
-
-      const cacheKey = `${debouncedTerm}-${pageNo}`
+      
+      hasSearched || sethasSearched(true)
+      const cacheKey = `${debouncedTerm}-${pageNo}-${type}`;
       if (cache.current[cacheKey]) {
         setmovieList(cache.current[cacheKey])
         return
@@ -65,7 +70,7 @@ function App() {
         //     API_BASE_URL + "&s=" + debouncedTerm + "&page=" + pageNo
         //   )}`
 
-        const endpoint = `/omdb/?apikey=${API_KEY}&s=${debouncedTerm}&page=${pageNo}`
+        const endpoint = `/omdb/?apikey=${API_KEY}&s=${debouncedTerm}&page=${pageNo}&type=${type}`
 
         const response = await fetch(endpoint, { ...API_OPTIONS, signal })
         if (!response.ok) {
@@ -74,7 +79,7 @@ function App() {
         const data = await response.json()
         if (data.Response === "False") {
           if (pageNo === 1) {
-            seterrorMessage("No movies found.")
+            seterrorMessage(data.error || "")
             setmovieList([])
           }
           return
@@ -115,7 +120,7 @@ function App() {
 
     return () => controller.abort()
 
-  }, [debouncedTerm, pageNo])
+  }, [debouncedTerm, pageNo, type])
 
 
   useLayoutEffect(() => {
@@ -135,15 +140,16 @@ function App() {
 
         <section className='all-movies w-[80%] mt-8 mb-12'>
           <div className="allmovies-header flex justify-between items-center">
-            <h2 className='text-2xl text-white font-bold pb-2'>ALL MOVIES</h2>
+            <h2 className='text-2xl text-white font-bold pb-2'>ALL {type=== "" ? "RESULTS" : type === "series" ? `${type.toUpperCase()}`:`${type.toUpperCase()}S`}</h2>
             <div className="group relative">
 
               <button className='type-btn font-bold bg-slate-700 text-white px-4 py-2 rounded-2xl cursor-pointer focus:scale-95 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600'>Type</button>
 
               <div className='absolute z-10 opacity-100 group-hover:opacity-100 group-hover:visible group-hover:translate-y-1 transition-all ease-in focus-within:opacity-100 focus-within:visible focus-within:translate-y-1 invisible translate-y-0 top-10 right-0 bg-slate-700 rounded-2xl shadow-lg mt-1 text-white font-light flex flex-col gap-2'>
-                <div className="type-movie cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-t-2xl">Movie</div>
-                <div className="type-series cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100">Series</div>
-                <div className="type-games cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-b-2xl">Game</div>
+                <div onClick={()=>settype("")} className="type-movie cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-t-2xl">All</div>
+                <div onClick={()=>settype("movie")} className="type-movie cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-t-2xl">Movie</div>
+                <div onClick={()=>settype("series")} className="type-series cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100">Series</div>
+                <div onClick={()=>settype("game")} className="type-games cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-b-2xl">Game</div>
               </div>
             </div>
           </div>
@@ -152,11 +158,9 @@ function App() {
             <p className='text-white'><SpinnerIcon /></p>
           ) : errorMessage ? <div className='text-white'>{errorMessage}</div> : movieList.length > 0 ? (
             <div className="wrapper">
-              {movieList.length > 0 && (
                 <p className="text-slate-300 mb-2">
                   Showing {movieList.length} of {totalResults} results for "{debouncedTerm}"
                 </p>
-              )}
               <div className='movie-grid grid grid-cols-5 gap-6 p-4'>
                 {movieList.map((movie) => (
                   <div key={movie.imdbID} className='movie-card w-64 h-fit min-h-[400px] bg-slate-700 rounded-4xl shadow-md p-4 flex flex-col transition-all ease-in hover:scale-105 hover:bg-slate-600 cursor-pointer'>
@@ -183,7 +187,7 @@ function App() {
                 <button disabled={pageNo === totalPages} onClick={() => { setpageNo(prev => prev + 1); }} className='next-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600 disabled:pointer-events-none disabled:bg-slate-500'>Next &gt;&gt;</button>
               </div>
             </div>
-          ) : (
+          ) : !loading && hasSearched && movieList.length === 0 && !errorMessage && (
             <p className='text-red-400'>No movies found. Try a different search.</p>
           )}
         </section>
