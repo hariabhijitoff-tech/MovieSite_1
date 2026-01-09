@@ -16,7 +16,7 @@ const API_OPTIONS = {
 
 
 function App() {
-    
+
   const [searchTerm, setSearchTerm] = useState('')
   const [errorMessage, seterrorMessage] = useState("")
   const [movieList, setmovieList] = useState([])
@@ -24,8 +24,8 @@ function App() {
   const [debouncedTerm, setdebouncedTerm] = useState('')
   const [pageNo, setpageNo] = useState(1)
   const [totalResults, settotalResults] = useState(0)
-  let totalPages =0
-  if (totalResults > 0) {totalPages = Math.ceil(totalResults / 10)}
+  let totalPages = 0
+  if (totalResults > 0) { totalPages = Math.ceil(totalResults / 10) }
 
   const cache = useRef({})
 
@@ -117,9 +117,9 @@ function App() {
 
   }, [debouncedTerm, pageNo])
 
-  
+
   useLayoutEffect(() => {
-          window.scrollTo({
+    window.scrollTo({
       top: 340,
       left: 0,
       behavior: 'smooth'
@@ -134,7 +134,19 @@ function App() {
         <Hero searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
         <section className='all-movies w-[80%] mt-8 mb-12'>
-          <h2 className='text-2xl text-white font-bold pb-2'>ALL MOVIES</h2>
+          <div className="allmovies-header flex justify-between items-center">
+            <h2 className='text-2xl text-white font-bold pb-2'>ALL MOVIES</h2>
+            <div className="group relative">
+
+              <button className='type-btn font-bold bg-slate-700 text-white px-4 py-2 rounded-2xl cursor-pointer focus:scale-95 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600'>Type</button>
+
+              <div className='absolute z-10 opacity-100 group-hover:opacity-100 group-hover:visible group-hover:translate-y-1 transition-all ease-in focus-within:opacity-100 focus-within:visible focus-within:translate-y-1 invisible translate-y-0 top-10 right-0 bg-slate-700 rounded-2xl shadow-lg mt-1 text-white font-light flex flex-col gap-2'>
+                <div className="type-movie cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-t-2xl">Movie</div>
+                <div className="type-series cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100">Series</div>
+                <div className="type-games cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-b-2xl">Game</div>
+              </div>
+            </div>
+          </div>
 
           {loading ? (
             <p className='text-white'><SpinnerIcon /></p>
@@ -164,12 +176,12 @@ function App() {
                   </div>
                 ))}
               </div>
-        <div className="page-no text-md text-center text-white mt-6 pb-4"> Page {pageNo} of {totalPages}</div>
+              <div className="page-no text-md text-center text-white mt-6 pb-4"> Page {pageNo} of {totalPages}</div>
 
-        <div className="pages text-center flex justify-center gap-10">
-          <button disabled={pageNo === 1} onClick={() => {setpageNo(prev => prev - 1)}} className='page-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600 disabled:pointer-events-none disabled:bg-slate-500'>&lt;&lt; Prev</button>
-          <button disabled={pageNo === totalPages} onClick={() => {setpageNo(prev => prev + 1);}} className='page-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600 disabled:pointer-events-none disabled:bg-slate-500'>Next &gt;&gt;</button>
-        </div>
+              <div className="pages text-center flex justify-center gap-10">
+                <button disabled={pageNo === 1} onClick={() => { setpageNo(prev => prev - 1) }} className='prev-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600 disabled:pointer-events-none disabled:bg-slate-500'>&lt;&lt; Prev</button>
+                <button disabled={pageNo === totalPages} onClick={() => { setpageNo(prev => prev + 1); }} className='next-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600 disabled:pointer-events-none disabled:bg-slate-500'>Next &gt;&gt;</button>
+              </div>
             </div>
           ) : (
             <p className='text-red-400'>No movies found. Try a different search.</p>
