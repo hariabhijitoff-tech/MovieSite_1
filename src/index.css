@@ -1,3 +1,21 @@
 @import "tailwindcss";
 @import "flowbite-react/plugin/tailwindcss";
 @source "../.flowbite-react/class-list.json";
+
+
+
+@theme {
+
+    --animate-popup: popup 0.4s ease-in-out forwards;
+
+    @keyframes popup {
+        0% {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+    }
+}

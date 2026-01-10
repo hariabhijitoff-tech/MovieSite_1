@@ -3,7 +3,6 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import SpinnerIcon from './components/SpinnerIcon'
 import { useDebounce } from 'react-use'
-
 const API_KEY = import.meta.env.VITE_OMDB_API_KEY
 const API_BASE_URL = "http://www.omdbapi.com/?apikey=" + API_KEY
 const API_OPTIONS = {
@@ -163,10 +162,11 @@ function App() {
                   Showing {movieList.length} of {totalResults} results for "{debouncedTerm}"
                 </p>
               <div className='movie-grid grid grid-cols-5 gap-6 p-4 relative'>
-            { selectedMovie && (<><div id='full-card' className="w-220 h-130 fixed z-30 bg-red-800 rounded-3xl inset-0 m-auto">
-              <button className='cursor-pointer rounded full bg-amber-400 text-7xl absolute right-0' onClick={()=>setselectedMovie(null)}>X</button>
+            { selectedMovie && (<><div id='full-card' className="w-220 h-130 fixed z-30 bg-slate-600/40 backdrop-blur-[6px] rounded-[20px] inset-0 m-auto p-6 border border-slate-500 flex flex-col items-center justify-center animate-popup transition-all ease-in">
+              <button className='cursor-pointer rounded-full bg-slate-400 px-2 text-md absolute right-2 top-2' onClick={()=>setselectedMovie(null)}>X</button>
+              <div className="inner-card bg-slate-950 w-full h-full rounded-[14px]"></div>
             </div>
-              <div className="backdrop-wrap w-screen h-screen fixed inset-0 z-20 backdrop-blur-[2px] bg-slate-900/40"></div></>)}
+              <div className="backdrop-wrap w-screen h-screen fixed inset-0 z-20 backdrop-blur-[6px] bg-slate-900/20"></div></>)}
                 {movieList.map((movie) => (
                   <div key={movie.imdbID} onClick={()=>setselectedMovie(movie)} className='movie-card w-64 h-fit min-h-[400px] bg-slate-700 rounded-4xl shadow-md p-4 flex flex-col transition-all ease-in hover:scale-105 hover:bg-slate-600 cursor-pointer'>
                     <img
