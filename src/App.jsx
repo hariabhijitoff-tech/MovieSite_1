@@ -20,12 +20,14 @@ function App() {
   const [errorMessage, seterrorMessage] = useState("")
   const [movieList, setmovieList] = useState([])
   const [loading, setloading] = useState(false)
+  const [loading2, setloading2] = useState(false)
   const [debouncedTerm, setdebouncedTerm] = useState('')
   const [pageNo, setpageNo] = useState(1)
   const [totalResults, settotalResults] = useState(0)
   const [type, settype] = useState('')
   const [hasSearched, sethasSearched] = useState(false)
   const [selectedMovie, setselectedMovie] = useState(null)
+  const [movieDetails, setmovieDetails] = useState(null)
   let totalPages = 0
   if (totalResults > 0) { totalPages = Math.ceil(totalResults / 10) }
 
@@ -48,7 +50,7 @@ function App() {
         sethasSearched(false)
         return
       }
-      
+
       hasSearched || sethasSearched(true)
       const cacheKey = `${debouncedTerm}-${pageNo}-${type}`;
       if (cache.current[cacheKey]) {
@@ -123,13 +125,58 @@ function App() {
   }, [debouncedTerm, pageNo, type])
 
 
-  useLayoutEffect(() => {
-    window.scrollTo({
-      top: 340,
-      left: 0,
-      behavior: 'smooth'
-    })
-  }, [pageNo])
+const firstRender = useRef(true)
+
+useEffect(() => {
+  if (firstRender.current) {
+    firstRender.current = false
+    return
+  }
+
+  window.scrollTo({
+    top: 340,
+    behavior: 'smooth'
+  })
+}, [pageNo])
+
+
+
+  useEffect(() => {
+    const getDetails = async () => {
+      if (!selectedMovie) return;
+
+      setloading2(true)
+      seterrorMessage("")
+      try {
+        const endpoint = `/omdb/?apikey=${API_KEY}&i=${selectedMovie.imdbID}&plot=short`
+        const response = await fetch(endpoint, API_OPTIONS)
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        const data = await response.json()
+        if (data.Response === "False") {
+          seterrorMessage(data.error || "")
+          return
+        }
+
+        setmovieDetails(data)
+        console.log(data)
+
+      }
+      catch (error) {
+        console.error("Error fetching movie details:", error)
+      }
+
+      finally {
+        setloading2(false)
+      }
+    }
+
+    getDetails()
+
+  }, [selectedMovie])
+
 
 
   return (
@@ -140,16 +187,16 @@ function App() {
 
         <section className='all-movies w-[80%] mt-8 mb-12'>
           <div className="allmovies-header flex justify-between items-center">
-            <h2 className='text-2xl text-white font-bold pb-2'>ALL {type=== "" ? "RESULTS" : type === "series" ? `${type.toUpperCase()}`:`${type.toUpperCase()}S`}</h2>
+            <h2 className='text-2xl text-white font-bold pb-2'>ALL {type === "" ? "RESULTS" : type === "series" ? `${type.toUpperCase()}` : `${type.toUpperCase()}S`}</h2>
             <div className="group relative">
 
               <button className='type-btn font-bold bg-slate-700 text-white px-4 py-2 rounded-2xl cursor-pointer focus:scale-95 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600'>Type</button>
 
               <div className='absolute z-10 opacity-100 group-hover:opacity-100 group-hover:visible group-hover:translate-y-1 transition-all ease-in focus-within:opacity-100 focus-within:visible focus-within:translate-y-1 invisible translate-y-0 top-10 right-0 bg-slate-700 rounded-2xl shadow-lg mt-1 text-white font-light flex flex-col gap-2'>
-                <div onClick={()=>settype("")} className="type-movie cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-t-2xl">All</div>
-                <div onClick={()=>settype("movie")} className="type-movie cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-t-2xl">Movie</div>
-                <div onClick={()=>settype("series")} className="type-series cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100">Series</div>
-                <div onClick={()=>settype("game")} className="type-games cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-b-2xl">Game</div>
+                <div onClick={() => settype("")} className="type-movie cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-t-2xl">All</div>
+                <div onClick={() => settype("movie")} className="type-movie cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-t-2xl">Movie</div>
+                <div onClick={() => settype("series")} className="type-series cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100">Series</div>
+                <div onClick={() => settype("game")} className="type-games cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-b-2xl">Game</div>
               </div>
             </div>
           </div>
@@ -158,44 +205,65 @@ function App() {
             <p className='text-white'><SpinnerIcon /></p>
           ) : errorMessage ? <div className='text-white'>{errorMessage}</div> : movieList.length > 0 ? (
             <div className="wrapper">
-                <p className="text-slate-300 mb-2">
-                  Showing {movieList.length} of {totalResults} results for "{debouncedTerm}"
-                </p>
+              <p className="text-slate-300 mb-2">
+                Showing {movieList.length} of {totalResults} results for "{debouncedTerm}"
+              </p>
               <div className='movie-grid grid grid-cols-5 gap-6 p-4 relative'>
-            { selectedMovie && (<><div id='full-card' className="w-220 h-130 fixed z-30 bg-slate-600/40 backdrop-blur-[6px] rounded-[20px] inset-0 m-auto p-6 border border-slate-500 flex flex-col items-center justify-center animate-popup transition-all ease-in">
-              <button className='cursor-pointer rounded-full bg-slate-400 px-2 text-md absolute right-2 top-2' onClick={()=>setselectedMovie(null)}>X</button>
-              <div className="inner-card bg-slate-950 w-full h-full rounded-[14px]"></div>
-            </div>
-              <div className="backdrop-wrap w-screen h-screen fixed inset-0 z-20 backdrop-blur-[6px] bg-slate-900/20"></div></>)}
-                {movieList.map((movie) => (
-                  <div key={movie.imdbID} onClick={()=>setselectedMovie(movie)} className='movie-card w-64 h-fit min-h-[400px] bg-slate-700 rounded-4xl shadow-md p-4 flex flex-col transition-all ease-in hover:scale-105 hover:bg-slate-600 cursor-pointer'>
-                    <img
-                      src={movie.Poster !== "N/A" ? movie.Poster : "./src/assets/poster.png"}
-                      alt={movie.Title}
-                      className='movie-poster m-auto w-56 max-w-56 h-[2/3] rounded-2xl drop-shadow-2xl'
-                    />
-                    <div className="infos text-white text-md my-2 px-2 flex flex-col items-baseline gap-2">
-                      <h3 className='movie-title text-xl font-bold'>{movie.Title}</h3>
-                      <div className="data flex gap-4">
-                        <p className='movie-year'>{movie.Year}</p>
-                        <span>•</span>
-                        <p className='movie-rating'>{movie.Type}</p>
+                {selectedMovie && (<><div id='full-card' className="w-220 h-130 fixed z-30 bg-slate-600/40 backdrop-blur-[6px] rounded-[20px] inset-0 m-auto p-6 border border-slate-500 flex flex-col items-center justify-center animate-popup transition-all ease-in">
+                  <button className='cursor-pointer rounded-full bg-slate-400 px-2 text-md font-bold absolute right-2 top-2' onClick={() => setselectedMovie(null)}>X</button>
+                  <div className="inner-card px-4 bg-slate-950 w-full h-full rounded-[14px] flex items-center overflow-hidden">
+                    {loading2 ? (<div className='w-full h-full flex justify-center items-center'><SpinnerIcon /></div>) : movieDetails ? (
+                      <div className="details w-full flex items-center gap-6 p-4 text-white">
+                        <div className="poster-wrap bg-slate-500 rounded-[10px] flex items-center justify-center py-2 px-2 w-auto h-auto shrink-0">
+                        <img src={movieDetails.Poster !== "N/A" ? movieDetails.Poster : "./src/assets/poster.png"} alt={movieDetails.Title} className='max-w-64 border-2 border-slate-500 rounded-[10px] drop-shadow-md drop-shadow-slate-600/40' />
+                        </div>
+                        <div className="movie-infos h-[400px]">
+                          <h2 className='text-3xl font-bold mb-2'>{movieDetails.Title} ({movieDetails.Year})</h2>
+                          <p className='mb-2 flex gap-2'><span>{movieDetails.Type}</span><span>•</span>{movieDetails.Rated!=="N/A" && <><span>{movieDetails.Rated}</span><span>•</span></>}{(movieDetails.Type === "series" && movieDetails.totalSeasons !== "N/A") && (<><span>{movieDetails.totalSeasons} Seasons</span></>)}{(movieDetails.Type !== "series" && movieDetails.Runtime !== "N/A") && (<><span>•</span><span>{movieDetails.Runtime}</span></>)}</p>
+                          <p className='mb-2'><span className='font-bold'>Genre:</span> {movieDetails.Genre}</p>
+                          <p className='mb-2'><span className='font-bold'>Language:</span> {movieDetails.Language}</p>
+                          <p className='mb-2'><span className='font-bold'>Director:</span> {movieDetails.Director}</p>
+                          <p className='mb-2'><span className='font-bold'>Cast:</span> {movieDetails.Actors}</p>
+                          <p className='mb-2'><span className='font-bold'>Writer:</span> {movieDetails.Writer}</p>
+                          <p className='mb-2'><span className='font-bold'>Plot:</span> {movieDetails.Plot}</p>
+                          <p className='mb-2'><span className='font-bold'>Rating:</span> {movieDetails.imdbID}</p>
+                          <div className="ratings">
+
+                          </div>
+                        </div>
+                      </div>) : (<p className='text-white'>No details found.</p>)}
+                  </div>
+                  </div>
+                  <div className="backdrop-wrap w-screen h-screen fixed inset-0 z-20 backdrop-blur-[6px] bg-slate-900/20"></div></>)}
+                  {movieList.map((movie) => (
+                    <div key={movie.imdbID} onClick={() => setselectedMovie(movie)} className='movie-card w-64 h-fit min-h-[400px] bg-slate-700 rounded-4xl shadow-md p-4 flex flex-col transition-all ease-in hover:scale-105 hover:bg-slate-600 cursor-pointer'>
+                      <img
+                        src={movie.Poster !== "N/A" ? movie.Poster : "./src/assets/poster.png"}
+                        alt={movie.Title}
+                        className='movie-poster m-auto w-56 max-w-56 h-[2/3] rounded-2xl drop-shadow-2xl'
+                      />
+                      <div className="infos text-white text-md my-2 px-2 flex flex-col items-baseline gap-2">
+                        <h3 className='movie-title text-xl font-bold'>{movie.Title}</h3>
+                        <div className="data flex gap-4">
+                          <p className='movie-year'>{movie.Year}</p>
+                          <span>•</span>
+                          <p className='movie-rating'>{movie.Type}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-              <div className="page-no text-md text-center text-white mt-6 pb-4"> Page {pageNo} of {totalPages}</div>
+                  ))}
+                </div>
+                <div className="page-no text-md text-center text-white mt-6 pb-4"> Page {pageNo} of {totalPages}</div>
 
-              <div className="pages text-center flex justify-center gap-10">
-                <button disabled={pageNo === 1} onClick={() => { setpageNo(prev => prev - 1) }} className='prev-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600 disabled:pointer-events-none disabled:bg-slate-500'>&lt;&lt; Prev</button>
-                <button disabled={pageNo === totalPages} onClick={() => { setpageNo(prev => prev + 1); }} className='next-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600 disabled:pointer-events-none disabled:bg-slate-500'>Next &gt;&gt;</button>
+                <div className="pages text-center flex justify-center gap-10">
+                  <button disabled={pageNo === 1} onClick={() => { setpageNo(prev => prev - 1) }} className='prev-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600 disabled:pointer-events-none disabled:bg-slate-500'>&lt;&lt; Prev</button>
+                  <button disabled={pageNo === totalPages} onClick={() => { setpageNo(prev => prev + 1); }} className='next-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600 disabled:pointer-events-none disabled:bg-slate-500'>Next &gt;&gt;</button>
+                </div>
               </div>
-            </div>
-          ) : !loading && hasSearched && movieList.length === 0 && !errorMessage && (
-            <p className='text-red-400'>No movies found. Try a different search.</p>
+              ) : !loading && hasSearched && movieList.length === 0 && !errorMessage && (
+              <p className='text-red-400'>No movies found. Try a different search.</p>
           )}
-        </section>
+            </section>
       </main>
     </>
   )
