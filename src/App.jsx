@@ -145,6 +145,12 @@ useEffect(() => {
     const getDetails = async () => {
       if (!selectedMovie) return;
 
+      const cacheKey = `${selectedMovie.imdbID}`;
+      if (cache.current[cacheKey]) {
+        setmovieDetails(cache.current[cacheKey])
+        return
+      }
+
       setloading2(true)
       seterrorMessage("")
       try {
@@ -161,6 +167,7 @@ useEffect(() => {
         }
 
         setmovieDetails(data)
+        cache.current[cacheKey] = data
         console.log(data)
 
       }
@@ -177,6 +184,12 @@ useEffect(() => {
 
   }, [selectedMovie])
 
+  const LOGO_MAP = {
+  'Internet Movie Database': './src/assets/icons_logo/imdb.png',
+  'Rotten Tomatoes': './src/assets/icons_logo/rt.png',
+  'Metacritic': './src/assets/icons_logo/metacritic.svg'
+};
+
 
 
   return (
@@ -192,9 +205,9 @@ useEffect(() => {
 
               <button className='type-btn font-bold bg-slate-700 text-white px-4 py-2 rounded-2xl cursor-pointer focus:scale-95 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600'>Type</button>
 
-              <div className='absolute z-10 opacity-100 group-hover:opacity-100 group-hover:visible group-hover:translate-y-1 transition-all ease-in focus-within:opacity-100 focus-within:visible focus-within:translate-y-1 invisible translate-y-0 top-10 right-0 bg-slate-700 rounded-2xl shadow-lg mt-1 text-white font-light flex flex-col gap-2'>
+              <div className='absolute z-10 opacity-100 group-hover:opacity-100 group-hover:visible group-hover:translate-y-1 transition-all ease-in focus-within:opacity-100 focus-within:visible focus-within:translate-y-1 text-center invisible translate-y-0 top-10 right-0 bg-slate-700 rounded-2xl shadow-lg mt-1 text-white font-light flex flex-col gap-2'>
                 <div onClick={() => settype("")} className="type-movie cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-t-2xl">All</div>
-                <div onClick={() => settype("movie")} className="type-movie cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-t-2xl">Movie</div>
+                <div onClick={() => settype("movie")} className="type-movie cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100">Movie</div>
                 <div onClick={() => settype("series")} className="type-series cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100">Series</div>
                 <div onClick={() => settype("game")} className="type-games cursor-pointer hover:bg-slate-500 px-4 py-2 transition-all ease-in duration-100 rounded-b-2xl">Game</div>
               </div>
@@ -217,7 +230,8 @@ useEffect(() => {
                         <div className="poster-wrap bg-slate-500 rounded-[10px] flex items-center justify-center py-2 px-2 w-auto h-auto shrink-0">
                         <img src={movieDetails.Poster !== "N/A" ? movieDetails.Poster : "./src/assets/poster.png"} alt={movieDetails.Title} className='max-w-64 border-2 border-slate-500 rounded-[10px] drop-shadow-md drop-shadow-slate-600/40' />
                         </div>
-                        <div className="movie-infos h-[400px]">
+                        <div className="right">
+                        <div className="movie-infos h-[400px] flex flex-col justify-center overflow-y-auto pr-2">
                           <h2 className='text-3xl font-bold mb-2'>{movieDetails.Title} ({movieDetails.Year})</h2>
                           <p className='mb-2 flex gap-2'><span>{movieDetails.Type}</span><span>•</span>{movieDetails.Rated!=="N/A" && <><span>{movieDetails.Rated}</span><span>•</span></>}{(movieDetails.Type === "series" && movieDetails.totalSeasons !== "N/A") && (<><span>{movieDetails.totalSeasons} Seasons</span></>)}{(movieDetails.Type !== "series" && movieDetails.Runtime !== "N/A") && (<><span>•</span><span>{movieDetails.Runtime}</span></>)}</p>
                           <p className='mb-2'><span className='font-bold'>Genre:</span> {movieDetails.Genre}</p>
@@ -226,10 +240,16 @@ useEffect(() => {
                           <p className='mb-2'><span className='font-bold'>Cast:</span> {movieDetails.Actors}</p>
                           <p className='mb-2'><span className='font-bold'>Writer:</span> {movieDetails.Writer}</p>
                           <p className='mb-2'><span className='font-bold'>Plot:</span> {movieDetails.Plot}</p>
-                          <p className='mb-2'><span className='font-bold'>Rating:</span> {movieDetails.imdbID}</p>
-                          <div className="ratings">
-
+                          <div className="ratings flex w-full justify-center items-center gap-8 mb-2">
+                            {movieDetails.Ratings && movieDetails.Ratings.length > 0 && movieDetails.Ratings.map((rating, index)=>{ const logoUrl = LOGO_MAP[rating.Source]; return( <div className='flex items-center gap-2'><img className='w-6 shrink-0 object-contain' src={logoUrl} alt="logo"/> <span>{rating.Value}</span></div>)})}
                           </div>
+                        </div>
+                        <div className="buttons flex gap-8 mb-4 justify-center">
+                          <button className='bg-slate-500/20 py-2 px-4 rounded-full hover:bg-slate-400/20 cursor-pointer hover:scale-95 hover:text-pink-500 transition-all ease-in'>L</button>
+                          <button className='bg-slate-500/20 py-2 px-4 rounded-full hover:bg-slate-400/20 cursor-pointer hover:scale-95 hover:text-green-500 transition-all ease-in'>S</button>
+                          <button className='bg-slate-500/20 py-2 px-4 rounded-full  cursor-pointer hover:scale-95 hover:bg-blue-500 transition-all ease-in'>*</button>
+                          <button className='bg-amber-600 py-2 px-4 rounded-full hover:bg-amber-500 cursor-pointer hover:scale-95 transition-all ease-in'>M</button>
+                        </div>
                         </div>
                       </div>) : (<p className='text-white'>No details found.</p>)}
                   </div>
