@@ -28,6 +28,12 @@ function App() {
   const [hasSearched, sethasSearched] = useState(false)
   const [selectedMovie, setselectedMovie] = useState(null)
   const [movieDetails, setmovieDetails] = useState(null)
+
+  const [liked, setliked] = useState(false)
+  const [saved, setsaved] = useState(false)
+  const [shared, setshared] = useState(false)
+
+
   let totalPages = 0
   if (totalResults > 0) { totalPages = Math.ceil(totalResults / 10) }
 
@@ -231,9 +237,9 @@ useEffect(() => {
                         <img src={movieDetails.Poster !== "N/A" ? movieDetails.Poster : "./src/assets/poster.png"} alt={movieDetails.Title} className='max-w-64 border-2 border-slate-500 rounded-[10px] drop-shadow-md drop-shadow-slate-600/40' />
                         </div>
                         <div className="right">
-                        <div className="movie-infos h-[400px] flex flex-col justify-center overflow-y-auto pr-2">
+                        <div className="movie-infos h-[390px] flex flex-col justify-safe-center overflow-y-auto pr-2 mt-6">
                           <h2 className='text-3xl font-bold mb-2'>{movieDetails.Title} ({movieDetails.Year})</h2>
-                          <p className='mb-2 flex gap-2'><span>{movieDetails.Type}</span><span>•</span>{movieDetails.Rated!=="N/A" && <><span>{movieDetails.Rated}</span><span>•</span></>}{(movieDetails.Type === "series" && movieDetails.totalSeasons !== "N/A") && (<><span>{movieDetails.totalSeasons} Seasons</span></>)}{(movieDetails.Type !== "series" && movieDetails.Runtime !== "N/A") && (<><span>•</span><span>{movieDetails.Runtime}</span></>)}</p>
+                          <p className='mb-2 flex gap-2'><span>{movieDetails.Type}</span><span>•</span>{movieDetails.Rated!=="N/A" && <><span>{movieDetails.Rated}</span><span>•</span></>}{(movieDetails.Type === "series" && movieDetails.totalSeasons !== "N/A") && (<><span>{movieDetails.totalSeasons} Seasons</span></>)}{(movieDetails.Type !== "series" && movieDetails.Runtime !== "N/A") && (<><span>{movieDetails.Runtime}</span></>)}</p>
                           <p className='mb-2'><span className='font-bold'>Genre:</span> {movieDetails.Genre}</p>
                           <p className='mb-2'><span className='font-bold'>Language:</span> {movieDetails.Language}</p>
                           <p className='mb-2'><span className='font-bold'>Director:</span> {movieDetails.Director}</p>
@@ -244,13 +250,13 @@ useEffect(() => {
                             {movieDetails.Ratings && movieDetails.Ratings.length > 0 && movieDetails.Ratings.map((rating, index)=>{ const logoUrl = LOGO_MAP[rating.Source]; return( <div className='flex items-center gap-2'><img className='w-6 shrink-0 object-contain' src={logoUrl} alt="logo"/> <span>{rating.Value}</span></div>)})}
                           </div>
                         </div>
-                        <div className="buttons flex gap-8 mb-4 justify-center">
-                          <button className='bg-slate-500/20 py-2 px-4 rounded-full hover:bg-slate-400/20 cursor-pointer hover:scale-95 hover:text-pink-500 transition-all ease-in'>L</button>
-                          <button className='bg-slate-500/20 py-2 px-4 rounded-full hover:bg-slate-400/20 cursor-pointer hover:scale-95 hover:text-green-500 transition-all ease-in'>S</button>
-                          <button className='bg-slate-500/20 py-2 px-4 rounded-full  cursor-pointer hover:scale-95 hover:bg-blue-500 transition-all ease-in'>*</button>
+                        <div className="buttons flex gap-8 mb-6 mt-2 justify-center">
+                          <button onClick={()=>{setliked(!liked)}} className='bg-slate-500/20 py-2 px-3 rounded-full hover:bg-slate-400/20 cursor-pointer hover:scale-95 transition-all ease-in'><svg className={liked ? "w-4 fill-amber-500 animate-popup2 transition-all" : "w-4"} xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#EFEFEF"><path d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Zm0-108q96-86 158-147.5t98-107q36-45.5 50-81t14-70.5q0-60-40-100t-100-40q-47 0-87 26.5T518-680h-76q-15-41-55-67.5T300-774q-60 0-100 40t-40 100q0 35 14 70.5t50 81q36 45.5 98 107T480-228Zm0-273Z"/></svg></button>
+                          <button onClick={()=>{setsaved(!saved)}} className='bg-slate-500/20 py-2 px-3 rounded-full hover:bg-slate-400/20 cursor-pointer hover:scale-95 transition-all ease-in'><svg className={saved ? "w-4 fill-amber-500 animate-popup2 transition-all" : "w-4"} xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#EFEFEF"><path d="M200-120v-640q0-33 23.5-56.5T280-840h400q33 0 56.5 23.5T760-760v640L480-240 200-120Zm80-122 200-86 200 86v-518H280v518Zm0-518h400-400Z"/></svg></button>
+                          <button onClick={()=>{setshared(!shared)}} className='bg-slate-500/20 py-2 px-3 rounded-full hover:bg-slate-400/20 cursor-pointer hover:scale-95 transition-all ease-in'><svg className={shared ? "w-4 fill-amber-500 animate-popup2 transition-all" : "w-4"} xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#EFEFEF"><path d="M680-80q-50 0-85-35t-35-85q0-6 3-28L282-392q-16 15-37 23.5t-45 8.5q-50 0-85-35t-35-85q0-50 35-85t85-35q24 0 45 8.5t37 23.5l281-164q-2-7-2.5-13.5T560-760q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35q-24 0-45-8.5T598-672L317-508q2 7 2.5 13.5t.5 14.5q0 8-.5 14.5T317-452l281 164q16-15 37-23.5t45-8.5q50 0 85 35t35 85q0 50-35 85t-85 35Zm0-80q17 0 28.5-11.5T720-200q0-17-11.5-28.5T680-240q-17 0-28.5 11.5T640-200q0 17 11.5 28.5T680-160ZM200-440q17 0 28.5-11.5T240-480q0-17-11.5-28.5T200-520q-17 0-28.5 11.5T160-480q0 17 11.5 28.5T200-440Zm480-280q17 0 28.5-11.5T720-760q0-17-11.5-28.5T680-800q-17 0-28.5 11.5T640-760q0 17 11.5 28.5T680-720Zm0 520ZM200-480Zm480-280Z"/></svg></button>
                           <button className='bg-amber-600 py-2 px-4 rounded-full hover:bg-amber-500 cursor-pointer hover:scale-95 transition-all ease-in'>M</button>
                         </div>
-                        </div>
+                        </div> 
                       </div>) : (<p className='text-white'>No details found.</p>)}
                   </div>
                   </div>
