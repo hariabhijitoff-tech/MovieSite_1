@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import SpinnerIcon from './components/SpinnerIcon'
+import RecentlyViewed from './components/RecentlyViewed'
 import { useDebounce } from 'react-use'
 const API_KEY = import.meta.env.VITE_OMDB_API_KEY
 const API_BASE_URL = "http://www.omdbapi.com/?apikey=" + API_KEY
@@ -210,8 +211,12 @@ useEffect(() => {
         <Hero searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
         <section className='all-movies w-[80%] mt-8 mb-12'>
+
+          {loading ? (
+            <p className='text-white'><SpinnerIcon /></p>
+          ) : errorMessage ? <div className='text-white'>{errorMessage}</div> : movieList.length > 0 ? ( <>
           <div className="allmovies-header flex justify-between items-center">
-            <h2 className='text-2xl text-white font-bold pb-2'>ALL {type === "" ? "RESULTS" : type === "series" ? `${type.toUpperCase()}` : `${type.toUpperCase()}S`}</h2>
+            <h2 className='text-2xl text-white font-bold pb-2'>All {type === "" ? "resuts" : type === "series" ? `series` : `${type}s`}</h2>
             <div className="group relative">
 
               <button className='type-btn font-bold bg-slate-700 text-white px-4 py-2 rounded-2xl cursor-pointer focus:scale-95 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600'>Type</button>
@@ -224,10 +229,6 @@ useEffect(() => {
               </div>
             </div>
           </div>
-
-          {loading ? (
-            <p className='text-white'><SpinnerIcon /></p>
-          ) : errorMessage ? <div className='text-white'>{errorMessage}</div> : movieList.length > 0 ? (
             <div className="wrapper">
               <p className="text-slate-300 mb-2">
                 Showing {movieList.length} of {totalResults} results for "{debouncedTerm}"
@@ -266,8 +267,22 @@ useEffect(() => {
                   </div>
                   </div>
                   <div className="backdrop-wrap w-screen h-screen fixed inset-0 z-20 backdrop-blur-[6px] bg-slate-900/20"></div></>)}
-                  {movieList.map((movie) => (
-                    <div key={movie.imdbID} onClick={() => setselectedMovie(movie)} className='movie-card w-64 h-fit min-h-[400px] bg-slate-700 rounded-4xl shadow-md p-4 flex flex-col transition-all ease-in hover:scale-105 hover:bg-slate-600 cursor-pointer'>
+
+
+                  {movieList.map((movie) => { const saveRecentlyViewed = (movie) => {
+                        const key = "recently_viewed_movies";
+                        const old = JSON.parse(localStorage.getItem(key)) || [];
+
+                        // remove duplicates by imdbID
+                        const filtered = old.filter((m) => m.imdbID !== movie.imdbID);
+
+                        const updated = [movie, ...filtered].slice(0, 6); // keep max 10
+
+                        localStorage.setItem(key, JSON.stringify(updated));
+                      };
+  
+                    return(
+                    <div key={movie.imdbID} onClick={() => {setselectedMovie(movie); saveRecentlyViewed(movie);}} className='movie-card w-64 h-fit min-h-[400px] bg-slate-700 rounded-4xl shadow-md p-4 flex flex-col transition-all ease-in hover:scale-105 hover:bg-slate-600 cursor-pointer'>
                       <img
                         src={movie.Poster !== "N/A" ? movie.Poster : "./src/assets/poster.png"}
                         alt={movie.Title}
@@ -282,7 +297,7 @@ useEffect(() => {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
                 <div className="page-no text-md text-center text-white mt-6 pb-4"> Page {pageNo} of {totalPages}</div>
 
@@ -290,11 +305,12 @@ useEffect(() => {
                   <button disabled={pageNo === 1} onClick={() => { setpageNo(prev => prev - 1) }} className='prev-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600 disabled:pointer-events-none disabled:bg-slate-500'>&lt;&lt; Prev</button>
                   <button disabled={pageNo === totalPages} onClick={() => { setpageNo(prev => prev + 1); }} className='next-btn bg-slate-700 text-white px-3 py-3 rounded-2xl cursor-pointer hover:scale-90 transition-all ease-in hover:bg-slate-600 drop-shadow-slate-800 drop-shadow-md border-1 border-slate-600 disabled:pointer-events-none disabled:bg-slate-500'>Next &gt;&gt;</button>
                 </div>
-              </div>
+              </div> </>
               ) : !loading && hasSearched && movieList.length === 0 && !errorMessage && (
               <p className='text-red-400'>No movies found. Try a different search.</p>
           )}
             </section>
+            <RecentlyViewed setselectedMovie={setselectedMovie}/>
       </main>
     </>
   )
