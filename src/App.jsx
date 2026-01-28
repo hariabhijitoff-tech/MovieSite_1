@@ -252,7 +252,7 @@ useEffect(() => {
                           <p className='mb-2'><span className='font-bold'>Writer:</span> {movieDetails.Writer}</p>
                           <p className='mb-2'><span className='font-bold'>Plot:</span> {movieDetails.Plot}</p>
                           <div className="ratings flex w-full justify-center items-center gap-8 mb-2">
-                            {movieDetails.Ratings && movieDetails.Ratings.length > 0 && movieDetails.Ratings.map((rating, index)=>{ const logoUrl = LOGO_MAP[rating.Source]; const baseUrl = BASE_MAP[rating.Source];  return( <div className='flex items-center gap-2'><a href={rating.Source === "Internet Movie Database"? `${baseUrl}/${movieDetails.imdbID}/`: rating.Source === "Rotten Tomatoes"? `${baseUrl}/${movieDetails.Type === "movie"? 'm' : 'tv'}/${movieDetails.Title.replaceAll(":","").replaceAll(" ","_")}_${movieDetails.Year}`: `${baseUrl}/${movieDetails.Type === "movie"? 'movie' : 'tv'}/${movieDetails.Title.replaceAll(":","").replaceAll(" ","-")}`} target='_blank'><img className='w-6 shrink-0 object-contain' src={logoUrl} alt="logo"/></a> <span>{rating.Value}</span></div>)})}
+                            {movieDetails.Ratings && movieDetails.Ratings.length > 0 && movieDetails.Ratings.map((rating, index)=>{ const logoUrl = LOGO_MAP[rating.Source]; const baseUrl = BASE_MAP[rating.Source];  return( <div className='flex items-center gap-2'><a href={rating.Source === "Internet Movie Database"? `${baseUrl}${movieDetails.imdbID}/`: rating.Source === "Rotten Tomatoes"?  `https://www.google.com/search?q=${encodeURIComponent(`site:rottentomatoes.com ${movieDetails.Title} ${movieDetails.Year}`)}` : `${baseUrl}/${movieDetails.Type === "movie"? 'movie' : 'tv'}/${movieDetails.Title.replaceAll(":","").replaceAll(" ","-").toLowerCase()}`} target='_blank' rel='noreferrer'><img className='w-6 shrink-0 object-contain' src={logoUrl} alt="logo"/></a> <span>{rating.Value}</span></div>)})}
                           </div>
                         </div>
                         <div className="buttons flex gap-8 mb-6 mt-2 justify-center">
@@ -311,3 +311,4 @@ export default App
 
 {/* <h1 className='text-6xl font-bold mx-12'>{name?<>Hello, <span className='bg-gradient-to-r from-fuchsia-500 to-cyan-500 bg-clip-text text-transparent'>{name} !</span></>: "Hello"}</h1> */ }
 {/* <main className='h-screen w-screen flex flex-col justify-center items-start bg-gradient-to-br from-fuchsia-200 via-cyan-200 to-lime-200'> */ }
+
