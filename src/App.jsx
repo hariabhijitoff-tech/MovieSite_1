@@ -79,8 +79,8 @@ function App() {
         //     API_BASE_URL + "&s=" + debouncedTerm + "&page=" + pageNo
         //   )}`
 
-        const endpoint = `/omdb/?apikey=${API_KEY}&s=${debouncedTerm}&page=${pageNo}&type=${type}`
-
+        // const endpoint = `/omdb/?apikey=${API_KEY}&s=${debouncedTerm}&page=${pageNo}&type=${type}`
+        const endpoint = `https://www.omdbapi.com/?apikey=${API_KEY}&s=${debouncedTerm}&page=${pageNo}&type=${type}`
         const response = await fetch(endpoint, { ...API_OPTIONS, signal })
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
